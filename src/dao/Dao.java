@@ -6,7 +6,7 @@ import domain.AbstractEntity;
 
 public interface Dao<T extends AbstractEntity> {
     
-    public Integer create() throws DaoException;
+    public Integer create(T object) throws DaoException;
     
     public T getById(Integer id) throws DaoException;
     
