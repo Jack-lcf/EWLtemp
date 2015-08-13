@@ -22,9 +22,4 @@ public class ConnectionFactory {
     public Connection getConnection() throws SQLException {
         return source.getConnection();
     }
-
-    /** attempts to close current connection */
-    public void putConnection(Connection connection) throws SQLException {
-        connection.close();
-    }
 }

@@ -3,14 +3,21 @@ package dao.mysql;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
+import logger.Log;
 import dao.Dao;
 import dao.DaoException;
 import domain.AbstractEntity;
 
 public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T> {
 
+    private ConnectionFactory connectionFactory = null;
+    
+    public AbstractJDBCDao(ConnectionFactory cf) {
+       connectionFactory = cf;
+    }
     /**
      * return sql query to get all records from table
      *
@@ -73,8 +80,43 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
         // insert new record to database
         String query = getInsertQuery();
         PreparedStatement statement = null;
-        Connection connection = 
-        return null;
+        Connection connection = null;
+        try {
+            connection = connectionFactory.getConnection();
+            statement = connection.prepareStatement(query);
+            int count = statement.executeUpdate();
+            if(count != 1) {
+                throw new DaoException("Count of records for update is " + count);
+            }
+        } catch (SQLException e) {
+            Log.error("Connection error: " + e);
+            throw new DaoException(e);
+        }
+        
+        // Get a just inserted record
+        Integer id = null;
+        query = getSelectQuery() + " WHERE id = last_insert_id();";
+        statement = null;
+        ResultSet resultSet = null;
+        try{
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+            List<T> result = parseResultSet(resultSet);
+            if(result == null || result.size() != 1) {
+                throw new DaoException("Exception on find by id new persist data");
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+                connection.close();
+            } catch (SQLException | NullPointerException e) {
+                throw new DaoException(e);
+            }            
+        }
+        return id;
     }
 
     @Override
