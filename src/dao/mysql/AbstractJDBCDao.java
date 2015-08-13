@@ -14,24 +14,25 @@ import domain.AbstractEntity;
 public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T> {
 
     private ConnectionFactory connectionFactory = null;
-    
+
     public AbstractJDBCDao(ConnectionFactory cf) {
-       connectionFactory = cf;
+        connectionFactory = cf;
     }
+
     /**
      * return sql query to get all records from table
      *
      * SELECT * FROM [Table]
      */
     public abstract String getSelectQuery();
-    
+
     /**
      * return sql query to insert new record into table
      *
      * INSERT INTO [Table] ([column, column, ...]) VALUES (?, ?, ...);
      */
     public abstract String getInsertQuery();
-    
+
     /**
      * return sql query to update record
      *
@@ -84,26 +85,27 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
         try {
             connection = connectionFactory.getConnection();
             statement = connection.prepareStatement(query);
+            prepareStatementForInsert(statement, object);
             int count = statement.executeUpdate();
-            if(count != 1) {
+            if (count != 1) {
                 throw new DaoException("Count of records for update is " + count);
             }
         } catch (SQLException e) {
-            Log.error("Connection error: " + e);
+            Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
         }
-        
+
         // Get a just inserted record
         Integer id = null;
         query = getSelectQuery() + " WHERE id = last_insert_id();";
         statement = null;
         ResultSet resultSet = null;
-        try{
+        try {
             statement = connection.prepareStatement(query);
             resultSet = statement.executeQuery();
             List<T> result = parseResultSet(resultSet);
-            if(result == null || result.size() != 1) {
-                throw new DaoException("Exception on find by id new persist data");
+            if (result == null || result.size() != 1) {
+                throw new DaoException(Messages.GET_BY_ID_ERROR);
             }
         } catch (SQLException e) {
             throw new DaoException(e);
@@ -114,34 +116,118 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
                 connection.close();
             } catch (SQLException | NullPointerException e) {
                 throw new DaoException(e);
-            }            
+            }
         }
         return id;
     }
 
     @Override
     public T getById(Integer id) throws DaoException {
-        // TODO Auto-generated method stub
-        return null;
+        List<T> result = null;
+        String query = getSelectQuery() + " WHERE id = " + id;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        Connection connection = null;
+        try {
+            connection = connectionFactory.getConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+            result = parseResultSet(resultSet);
+            if (result == null || result.size() != 1) {
+                throw new DaoException(Messages.GET_BY_ID_ERROR);
+            }
+        } catch (SQLException e) {
+            Log.error(Messages.CONNECTION_ERROR + e);
+            throw new DaoException(e);
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+                connection.close();
+            } catch (SQLException | NullPointerException e) {
+                throw new DaoException(e);
+            }
+        }
+        return result.iterator().next();
     }
 
     @Override
     public List<T> getAll() throws DaoException {
-        // TODO Auto-generated method stub
-        return null;
+        List<T> result = null;
+        String query = getSelectQuery();
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        Connection connection = null;
+        try {
+            connection = connectionFactory.getConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+            result = parseResultSet(resultSet);
+        } catch (SQLException e) {
+            Log.error(Messages.CONNECTION_ERROR + e);
+            throw new DaoException(e);
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+                connection.close();
+            } catch (SQLException | NullPointerException e) {
+                throw new DaoException(e);
+            }
+        }
+        return result;
     }
 
     @Override
     public void update(T object) throws DaoException {
-        // TODO Auto-generated method stub
-        
+        String query = getUpdateQuery();
+        PreparedStatement statement = null;
+        Connection connection = null;
+        try {
+            connection = connectionFactory.getConnection();
+            statement = connection.prepareStatement(query);
+            prepareStatementForUpdate(statement, object);
+            int count = statement.executeUpdate();
+            if (count != 1) {
+                throw new DaoException("Count of records for update is " + count);
+            }
+        } catch (SQLException e) {
+            Log.error(Messages.CONNECTION_ERROR + e);
+            throw new DaoException(e);
+        } finally {
+            try {
+                statement.close();
+                connection.close();
+            } catch (SQLException | NullPointerException e) {
+                throw new DaoException(e);
+            }
+        }
     }
 
     @Override
     public void delete(Integer id) throws DaoException {
-        // TODO Auto-generated method stub
-        
+        String query = getDeleteQuery();
+        PreparedStatement statement = null;
+        Connection connection = null;
+        try {
+            connection = connectionFactory.getConnection();
+            statement = connection.prepareStatement(query);
+            statement.setObject(1, id);
+            int count = statement.executeUpdate();
+            if (count != 1) {
+                throw new DaoException("Count of records for delete is " + count);
+            }
+        } catch (SQLException e) {
+            Log.error(Messages.CONNECTION_ERROR + e);
+            throw new DaoException(e);
+        } finally {
+            try {
+                statement.close();
+                connection.close();
+            } catch (SQLException | NullPointerException e) {
+                throw new DaoException(e);
+            }
+        }
     }
-    
-    
+
 }
