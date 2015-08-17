@@ -34,9 +34,17 @@ public class DaoFactoryImpl implements DaoFactory {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends Dao<AbstractEntity>> T createDao(Class<T> key) {
-        // TODO Auto-generated method stub
+        Class<? extends Dao<? extends AbstractEntity>> value = classes.get(key);
+        if(value != null) {
+            try {
+                return (T) value.getConstructor(ConnectionFactory.class).newInstance(connectionFactory);
+            } catch (Exception e) {
+                Log.error(Messages.CREATE_DAO_ERROR + e);
+            } 
+        }
         return null;
     }
 
