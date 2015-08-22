@@ -36,7 +36,7 @@ public class DaoFactoryImpl implements DaoFactory {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Dao<AbstractEntity>> T createDao(Class<T> key) {
+    public <T extends Dao<? extends AbstractEntity>> T createDao(Class<T> key) {
         Class<? extends Dao<? extends AbstractEntity>> value = classes.get(key);
         if(value != null) {
             try {

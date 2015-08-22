@@ -18,17 +18,17 @@ public class WordDaoImpl extends AbstractJDBCDao<Word> implements WordDao {
 
     @Override
     public String getSelectQuery() {
-        return "SELECT `id`, `eng`, `ru`,`correct`,`total` FROM `dictionary`;";
+        return "SELECT `id`, `eng`, `ru`,`correct`,`total` FROM `dictionary`";
     }
 
     @Override
     public String getInsertQuery() {
-        return "INSERT INTO `dictionary` (`eng`,`ru`,`correct`,`total`) VALUES (?,?,?,?);";
+        return "INSERT INTO `dictionary` (`eng`,`ru`,`correct`,`total`) VALUES (?,?,?,?)";
     }
 
     @Override
     public String getUpdateQuery() {
-        return "UPDATE `dictionary` SET `eng`=?,`ru`=?,`correct`=?,`total`=? WHERE `id`=?;";
+        return "UPDATE `dictionary` SET `eng`=?,`ru`=?,`correct`=?,`total`=? WHERE `id`=?";
     }
 
     @Override
@@ -62,7 +62,6 @@ public class WordDaoImpl extends AbstractJDBCDao<Word> implements WordDao {
             statement.setString(2, object.getRus());
             statement.setInt(3, object.getCorrect());
             statement.setInt(4, object.getTotal());
-            statement.setInt(5, object.getId());
         } catch (SQLException e) {
             throw new DaoException(e);
         }
@@ -75,6 +74,7 @@ public class WordDaoImpl extends AbstractJDBCDao<Word> implements WordDao {
             statement.setString(2, object.getRus());
             statement.setInt(3, object.getCorrect());
             statement.setInt(4, object.getTotal());
+            statement.setInt(5, object.getId());
         } catch (SQLException e) {
             throw new DaoException(e);
         }

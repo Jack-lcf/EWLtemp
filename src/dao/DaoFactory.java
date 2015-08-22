@@ -4,5 +4,5 @@ import domain.AbstractEntity;
 
 public interface DaoFactory {
     
-    public <T extends Dao<AbstractEntity>> T createDao(Class<T> key);
+    public <T extends Dao<? extends AbstractEntity>> T createDao(Class<T> key);
 }

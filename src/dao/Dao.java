@@ -2,9 +2,7 @@ package dao;
 
 import java.util.List;
 
-import domain.AbstractEntity;
-
-public interface Dao<T extends AbstractEntity> {
+public interface Dao<T> {
     
     public Integer create(T object) throws DaoException;
     
