@@ -84,15 +84,25 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
         Connection connection = null;
         try {
             connection = connectionFactory.getConnection();
+            connection.setAutoCommit(false);
             statement = connection.prepareStatement(query);
             prepareStatementForInsert(statement, object);
             int count = statement.executeUpdate();
             if (count != 1) {
                 throw new DaoException("Count of records for update is " + count);
             }
-        } catch (SQLException e) {
+            connection.commit();
+        } catch (SQLException e) {            
             Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
+        } finally {
+            try {
+                statement.close();
+                connection.rollback();
+                connection.close();
+            } catch (SQLException | NullPointerException e) {
+                throw new DaoException(e);
+            }
         }
 
         // Get a just inserted record
@@ -193,18 +203,21 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
         Connection connection = null;
         try {
             connection = connectionFactory.getConnection();
+            connection.setAutoCommit(false);
             statement = connection.prepareStatement(query);
             prepareStatementForUpdate(statement, object);
             int count = statement.executeUpdate();
             if (count != 1) {
                 throw new DaoException("Count of records for update is " + count);
             }
-        } catch (SQLException e) {
+            connection.commit();
+        } catch (SQLException e) {            
             Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
         } finally {
             try {
                 statement.close();
+                connection.rollback();
                 connection.close();
             } catch (SQLException | NullPointerException e) {
                 throw new DaoException(e);
@@ -225,12 +238,13 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
             if (count != 1) {
                 throw new DaoException("Count of records for delete is " + count);
             }
-        } catch (SQLException e) {
+        } catch (SQLException e) {            
             Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
         } finally {
             try {
                 statement.close();
+                connection.rollback();
                 connection.close();
             } catch (SQLException | NullPointerException e) {
                 throw new DaoException(e);
