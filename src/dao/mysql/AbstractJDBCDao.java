@@ -92,13 +92,17 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
                 throw new DaoException("Count of records for update is " + count);
             }
             connection.commit();
-        } catch (SQLException e) {            
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                Log.error(Messages.ROLLBACK_ERROR + e1);
+            }
             Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
         } finally {
             try {
                 statement.close();
-                connection.rollback();
                 connection.close();
             } catch (SQLException | NullPointerException e) {
                 throw new DaoException(e);
@@ -211,13 +215,17 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
                 throw new DaoException("Count of records for update is " + count);
             }
             connection.commit();
-        } catch (SQLException e) {            
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                Log.error(Messages.ROLLBACK_ERROR + e1);
+            }
             Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
         } finally {
             try {
                 statement.close();
-                connection.rollback();
                 connection.close();
             } catch (SQLException | NullPointerException e) {
                 throw new DaoException(e);
@@ -238,13 +246,17 @@ public abstract class AbstractJDBCDao<T extends AbstractEntity> implements Dao<T
             if (count != 1) {
                 throw new DaoException("Count of records for delete is " + count);
             }
-        } catch (SQLException e) {            
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                Log.error(Messages.ROLLBACK_ERROR + e1);
+            }
             Log.error(Messages.CONNECTION_ERROR + e);
             throw new DaoException(e);
         } finally {
             try {
                 statement.close();
-                connection.rollback();
                 connection.close();
             } catch (SQLException | NullPointerException e) {
                 throw new DaoException(e);
